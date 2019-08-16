@@ -67,9 +67,9 @@ public class App {
         }
         in.close();
 
-        // remove brackets from the response
-        String trimmedResponse = content.toString().replace("[", "").replace("]", "");
-        Quote ronQuote = new Quote(trimmedResponse);
+        Gson gson = new Gson();
+        String[] ronTextArr = gson.fromJson(content.toString(), String[].class);
+        Quote ronQuote = new Quote(ronTextArr[0]);
         return ronQuote;
     }
 
