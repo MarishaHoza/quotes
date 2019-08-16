@@ -24,8 +24,19 @@ public class App {
             // print the quote
             System.out.println(ronQuote);
 
-            // cache the quote
-            addQuoteToCache(ronQuote);
+            // cache the quote:
+
+            // --- set cache file location
+            String fileLocation = "src/main/resources/recentquotes.json";
+
+            // --- retrieve the current cache
+            ArrayList<Quote> currentQuotes = getQuotesFromFile(fileLocation);
+
+            // --- add the new quote only if it isn't already there
+            addQuoteToCache(ronQuote, currentQuotes);
+
+            // --- save the cache to the file
+            writeToFile(currentQuotes, fileLocation);
 
         } catch ( IOException e ) {
             // get all the cached quotes
@@ -62,10 +73,7 @@ public class App {
         return ronQuote;
     }
 
-    public static void addQuoteToCache(Quote newQuote) {
-        String fileLocation = "src/main/resources/recentquotes.json";
-        ArrayList<Quote> currentQuotes = getQuotesFromFile(fileLocation);
-
+    public static ArrayList<Quote> addQuoteToCache(Quote newQuote, ArrayList<Quote> currentQuotes) {
         boolean isAlreadyCached = false;
 
         for ( int i = 0; i < currentQuotes.size(); i++ ) {
@@ -74,14 +82,11 @@ public class App {
                 isAlreadyCached = true;
             }
         }
-
         if ( isAlreadyCached == false ) {
             // add the new quote to current quotes
             currentQuotes.add(newQuote);
-
-            // save to the cache file
-            writeToFile(currentQuotes, fileLocation);
         }
+        return currentQuotes;
     }
 
     public static void writeToFile(ArrayList<Quote> quotes, String fileLocation){
