@@ -5,65 +5,45 @@ package quotes;
 
 
 import com.google.gson.Gson;
-
-import java.io.File;
+import com.google.gson.reflect.TypeToken;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.io.FileReader;
+import java.util.ArrayList;
+
 
 public class App {
 
     public static void main(String[] args) throws FileNotFoundException {
+        ArrayList<Quote> quotes = readFile("src/main/resources/recentquotes.json");
 
-       String fileString = readFile("src/main/resources/recentquotes.json");
-       Quote[] quotes = buildQuotes(fileString);
+        int randomQuoteLocation = generateRandomNumberBetween(0, quotes.size());
 
-       int randomQuoteLocation = generateRandomNumberBetween(0, quotes.length);
-
-        System.out.println(quotes[randomQuoteLocation]);
-
-
+        System.out.println(quotes.get(randomQuoteLocation));
     }
 
-    // read in the file, return it as a string
+
+
+
+    // read in the file, return it as an array of quote objects
         // in: file location (String)
-        // out: String
+        // out: ArrayList<Quote>
 
-        // could use scanner or buffered reader
-        // Scanner reader = new Scanner(new File("src/main/resources/unicorns.json"));
+    public static ArrayList<Quote> readFile(String fileLocation) throws FileNotFoundException {
+        FileReader reader = new FileReader(fileLocation);
 
-        // buffered reader info: https://www.baeldung.com/java-buffered-reader
-        // BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/input.txt"));
-
-    public static String readFile(String fileLocation) throws FileNotFoundException {
-        Scanner reader = new Scanner(new File(fileLocation));
-        String entireFile = reader.nextLine();
-
-        while ( reader.hasNextLine() ){
-            entireFile += reader.nextLine();
-        }
-
-        return entireFile;
-    }
-
-
-
-    // turn the string into an array of Quote objects
-        // in: string
-        // out: Quote[]
-    public static Quote[] buildQuotes(String entireFile){
         Gson gson = new Gson();
 
-        Quote[] quotes = gson.fromJson(entireFile, Quote[].class);
+        // https://stackoverflow.com/questions/4318458/how-to-deserialize-a-list-using-gson-or-another-json-library-in-java
+        ArrayList<Quote> quotes2 = gson.fromJson(reader, new TypeToken<ArrayList<Quote>>(){}.getType());
 
-        return quotes;
+        return quotes2;
     }
 
 
     // generate a random number between two given values (zero and length of quotes array)
         // in: min & max
         // out: random int between
-
-    // min is inclusive, max is not
+        // min is inclusive, max is not
     public static int generateRandomNumberBetween(int min, int max){
         // cite source here
         if ( min >= max ){
@@ -72,6 +52,7 @@ public class App {
         int ranNum = (int)((Math.random() * max ) + min);
         return ranNum;
     }
+
 
 
 }

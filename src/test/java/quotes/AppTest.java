@@ -13,16 +13,8 @@ public class AppTest {
 
     @Test
     public void readFile() throws FileNotFoundException {
-        assertNotNull("Should return a string",
-                App.readFile("src/main/resources/recentquotes.json"));
-    }
-
-    @Test
-    public void buildQuotes() throws FileNotFoundException {
-        String jsonString = App.readFile("src/main/resources/onequote.json");
-        assertEquals("should return an array of quote objects",
-                "Charles Dickens",
-                App.buildQuotes(jsonString)[1].author);
+        assertEquals("Should return an array of quote objects that can be accessed",
+                "Charles Dickens", App.readFile("src/main/resources/onequote.json")[1].author);
     }
 
     @Test
