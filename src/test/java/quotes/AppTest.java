@@ -12,17 +12,24 @@ import static org.junit.Assert.*;
 public class AppTest {
 
     @Test
-    public void readFile() throws FileNotFoundException {
+    public void testReadFile() {
         assertEquals("Should return an array of quote objects that can be accessed",
-                "Charles Dickens", App.readFile("src/main/resources/onequote.json")[1].author);
+                "Charles Dickens", App.getQuotesFromFile("src/main/resources/onequote.json").get(1).author);
     }
 
     @Test
-    public void generateRandomNumberBetween() {
+    public void testGenerateRandomNumberBetween() {
         for ( int i = 0; i < 20; i++ ){
             int randomNum = App.generateRandomNumberBetween(0, 5);
             assertTrue("Random number should be within range",
                     randomNum >= 0 && randomNum <= 5);
         }
     }
+
+    // getQuoteFromRonAPI
+
+    // addQuoteToCache
+
+    // writeToFile
+
 }

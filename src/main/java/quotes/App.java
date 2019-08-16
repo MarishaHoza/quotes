@@ -6,37 +6,116 @@ package quotes;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 
 public class App {
 
-    public static void main(String[] args) throws FileNotFoundException {
-        ArrayList<Quote> quotes = readFile("src/main/resources/recentquotes.json");
+    public static void main(String[] args) {
 
-        int randomQuoteLocation = generateRandomNumberBetween(0, quotes.size());
+        try {
+            // get the quote
+            Quote ronQuote = getQuoteFromRonAPI();
 
-        System.out.println(quotes.get(randomQuoteLocation));
+            // print the quote
+            System.out.println(ronQuote);
+
+            // cache the quote
+            addQuoteToCache(ronQuote);
+
+        } catch ( IOException e ) {
+            // get all the cached quotes
+            ArrayList<Quote> quotes = getQuotesFromFile("src/main/resources/recentquotes.json");
+            // choose a random location
+            int randomQuoteLocation = generateRandomNumberBetween(0, quotes.size());
+
+            // print the cached quote at that random location
+            System.out.println(quotes.get(randomQuoteLocation));
+
+            // no need to cache, no new quote
+        }
     }
 
+    public static Quote getQuoteFromRonAPI() throws IOException {
+        // https://www.baeldung.com/java-http-request
+        URL url = new URL("https://ron-swanson-quotes.herokuapp.com/v2/quotes");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
 
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String inputLine;
+        StringBuilder content = new StringBuilder();
+
+        // https://github.com/codefellows/seattle-java-401d5/blob/master/class-09/apiFun/ApiFun.java
+        while ( (inputLine = in.readLine()) != null ){
+            content.append(inputLine);
+        }
+        in.close();
+
+        // remove brackets from the response
+        String trimmedResponse = content.toString().replace("[", "").replace("]", "");
+        Quote ronQuote = new Quote(trimmedResponse);
+        return ronQuote;
+    }
+
+    public static void addQuoteToCache(Quote newQuote) {
+        String fileLocation = "src/main/resources/recentquotes.json";
+        ArrayList<Quote> currentQuotes = getQuotesFromFile(fileLocation);
+
+        boolean isAlreadyCached = false;
+
+        for ( int i = 0; i < currentQuotes.size(); i++ ) {
+            if ( currentQuotes.get(i).text.equals(newQuote.text) ) {
+                // the quote is already in the cache
+                isAlreadyCached = true;
+            }
+        }
+
+        if ( isAlreadyCached == false ) {
+            // add the new quote to current quotes
+            currentQuotes.add(newQuote);
+
+            // save to the cache file
+            writeToFile(currentQuotes, fileLocation);
+        }
+    }
+
+    public static void writeToFile(ArrayList<Quote> quotes, String fileLocation){
+        Gson gson = new Gson();
+        String allQuotes = gson.toJson(quotes);
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fileLocation));
+            writer.write(allQuotes);
+            writer.close();
+        } catch (IOException e){
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+        }
+    }
 
 
     // read in the file, return it as an array of quote objects
         // in: file location (String)
         // out: ArrayList<Quote>
+    public static ArrayList<Quote> getQuotesFromFile(String fileLocation) {
+        try {
+            FileReader reader = new FileReader(fileLocation);
+            Gson gson = new Gson();
 
-    public static ArrayList<Quote> readFile(String fileLocation) throws FileNotFoundException {
-        FileReader reader = new FileReader(fileLocation);
+            // https://stackoverflow.com/questions/4318458/how-to-deserialize-a-list-using-gson-or-another-json-library-in-java
+            ArrayList<Quote> quotes2 = gson.fromJson(reader, new TypeToken<ArrayList<Quote>>() {
+            }.getType());
 
-        Gson gson = new Gson();
-
-        // https://stackoverflow.com/questions/4318458/how-to-deserialize-a-list-using-gson-or-another-json-library-in-java
-        ArrayList<Quote> quotes2 = gson.fromJson(reader, new TypeToken<ArrayList<Quote>>(){}.getType());
-
-        return quotes2;
+            return quotes2;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error reading from cache file");
+        }
     }
 
 
@@ -52,7 +131,5 @@ public class App {
         int ranNum = (int)((Math.random() * max ) + min);
         return ranNum;
     }
-
-
 
 }

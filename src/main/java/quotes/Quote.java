@@ -13,6 +13,11 @@ public class Quote {
         this.text = text;
     }
 
+    public Quote(String text){
+        this.text = text;
+        this.author = "Ron Swanson";
+    }
+
     public String toString(){
         return String.format("%s - %s", text, author);
     }
