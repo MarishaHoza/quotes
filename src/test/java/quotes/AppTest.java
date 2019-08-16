@@ -3,34 +3,70 @@
  */
 package quotes;
 
+import com.sun.org.apache.xpath.internal.operations.Quo;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
 public class AppTest {
+    ArrayList<Quote> testQuoteArr = new ArrayList<>();
+
+    @Before
+    public void setUpTestArr() {
+        testQuoteArr.add(new Quote(new String[]{""}, "Marisha", "many", "I click stuff"));
+        testQuoteArr.add(new Quote(new String[]{""}, "Kevin", "few", "I pushed to your repository"));
+        testQuoteArr.add(new Quote(new String[]{""}, "Brandon", "some", "Kevin ruins everything"));
+    }
+
 
     @Test
-    public void readFile() throws FileNotFoundException {
-        assertNotNull("Should return a string",
-                App.readFile("src/main/resources/recentquotes.json"));
+    public void testReadFile_and_writeToFile() {
+        App.writeToFile(testQuoteArr,"src/test/resources/testFile.json");
+
+        assertEquals("The file should contain the quotes set up in the test array",
+                "Kevin", App.getQuotesFromFile("src/test/resources/testFile.json").get(1).author);
     }
 
     @Test
-    public void buildQuotes() throws FileNotFoundException {
-        String jsonString = App.readFile("src/main/resources/onequote.json");
-        assertEquals("should return an array of quote objects",
-                "Charles Dickens",
-                App.buildQuotes(jsonString)[1].author);
-    }
-
-    @Test
-    public void generateRandomNumberBetween() {
+    public void testGenerateRandomNumberBetween() {
         for ( int i = 0; i < 20; i++ ){
             int randomNum = App.generateRandomNumberBetween(0, 5);
             assertTrue("Random number should be within range",
                     randomNum >= 0 && randomNum <= 5);
         }
     }
+
+    // getQuoteFromRonAPI
+    @Test
+    public void testGetQuoteFromRonAPI() throws IOException {
+        assertEquals("get quote from api should return a quote object with the author of 'Ron Swanson'",
+                "Ron Swanson", App.getQuoteFromRonAPI().author);
+    }
+
+    // addQuoteToCache
+    @Test
+    public void testAddQuoteToCache_newQuote() {
+        Quote newQuote = new Quote(new String[]{""}, "Marisha", "3", "three");
+        App.addQuoteToCache(newQuote, testQuoteArr);
+        assertEquals("A new quote should be added to the quotes arrayList",
+                4, testQuoteArr.size());
+    }
+
+    @Test
+    public void testAddQuoteToCache_sameQuote() {
+        Quote newQuote = new Quote(new String[]{""}, "Marisha", "3", "I write tests");
+        Quote sameQuote = new Quote(new String[]{""}, "Marisha", "3", "I write tests");
+
+        App.addQuoteToCache(newQuote, testQuoteArr);
+        App.addQuoteToCache(sameQuote, testQuoteArr);
+        
+        assertEquals("A quote with the same text should not be cached more than once",
+                4, testQuoteArr.size());
+    }
+
 }
